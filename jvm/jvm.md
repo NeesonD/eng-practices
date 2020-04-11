@@ -94,3 +94,57 @@
 
 
 
+
+##### jvm 推荐启动参数
+
+```
+ // 性能相关
+-XX:-UseBiasedLocking 
+-XX:-UseCounterDecay 
+-XX:AutoBoxCacheMax=20000 
+-XX:+PerfDisableSharedMem 
+-XX:+AlwaysPreTouch 
+-Djava.security.egd=file:/dev/./urandom
+
+// 内存大小相关
+-Xms3800m -Xmx3800m
+-Xmn1900m -Xss256k 
+-XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=512m 
+
+
+// GC策略
+-XX:+UseConcMarkSweepGC 
+-XX:+UseCMSInitiatingOccupancyOnly 
+-XX:CMSInitiatingOccupancyFraction=75 
+-XX:+ExplicitGCInvokesConcurrent
+-XX:-CMSClassUnloadingEnabled 
+-XX:+CMSScavengeBeforeRemark
+
+// GC 线程
+ParallelGCThreads＝8+( Processor - 8 ) ( 5/8 )；
+ConcGCThreads = (ParallelGCThreads + 3)/4
+
+
+// 监控
+-XX:+PrintCommandLineFlags 
+-XX:-OmitStackTraceInFastThrow
+-XX:ErrorFile=${MYLOGDIR}/hs_err_%p.log
+-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${LOGDIR}/
+
+// GC日志
+-Xloggc:/dev/shm/gc-myapp.log -XX:+PrintGCDateStamps -XX:+PrintGCDetails  
+-XX:+PrintGCApplicationStoppedTime 
+-XX:+PrintPromotionFailure
+
+// JMX
+-Dcom.sun.management.jmxremote.port=9981 
+-Dcom.sun.management.jmxremote.ssl=false 
+-Dcom.sun.management.jmxremote.authenticate=false 
+-Dfile.encoding=UTF-8
+
+// 开启 jfr
+-XX:+UnlockCommercialFeatures -XX:+FlightRecorder
+```
+
+
+
