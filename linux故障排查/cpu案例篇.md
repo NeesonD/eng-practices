@@ -53,6 +53,57 @@ KiB Swap:        0 total,        0 free,        0 used.  3536908 avail Mem
 ```
 docker run --privileged --name=app -itd feisky/app:iowait
 
+# 如果 IO 比较高，使用 dstat 分析（yum install dstat）
+dstat 1 10
+
+
+# 查看指定进程 IO CPU 执行情况
+pidstat -d -p 4344 1 3
+
+# 当出现 IO 很大的时候，查看系统调用的 IO 调用
+strace -p 4344
+
+* 如果执行失败，可能是进程以及挂掉了，可以检查一下进程是否变成 Z 状态
+
+# 接下来使用 perf 进行调用栈的排查
+perf record -g
+perf report
+
+# 一般通过上面的步骤就可以找到问题代码
+
+# 处理 Z 状态的进程
+pstree -aps 4344
 
 ```
 
+
+### 软中断偏高
+
+```shell script
+# 运行Nginx服务并对外开放80端口
+docker run -itd --name=nginx -p 80:80 nginx
+
+# -S参数表示设置TCP协议的SYN（同步序列号），-p表示目的端口为80
+# -i u100表示每隔100微秒发送一个网络帧
+# 注：如果你在实践过程中现象不明显，可以尝试把100调小，比如调成10甚至1
+$ hping3 -S -p 80 -i u100 192.168.0.30
+
+# 监控中断变化
+watch -d cat /proc/softirqs
+
+# 查看网络收发报告（yum install sysstat）
+sar -n DEV 1
+                (网卡)  每秒接收发送网络帧数  每秒接收发送网络字节数
+06:15:44 PM     IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s
+06:15:45 PM      eth0    266.00    380.00     16.78   1049.50      0.00      0.00      0.00
+06:15:45 PM        lo  73008.00  73008.00   2963.68   2963.68      0.00      0.00      0.00
+
+2963*1024/73008 = 41 byte 很明显是小包问题
+
+# 接下来使用 tcpdump 来抓对应网卡的包
+# -i eth0 只抓取eth0网卡，-n不解析协议名和主机名
+# tcp port 80表示只抓取tcp协议并且端口号为80的网络帧
+tcpdump -i eth0 -n tcp port 80
+
+
+```
