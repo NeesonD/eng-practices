@@ -28,3 +28,30 @@
 ![](pic/tcp-fin.jpg)
 
 ![](pic/tcp.jpg)
+
+#### 如何实现一个靠谱的协议
+
+* 保证消息的顺序性，也就是每个包都有 id (解决了顺序问题)
+* 通过累计应答，保证性能的同时，保证不丢包 （解决了丢包问题）
+
+**发送端**
+
+![](pic/tcp-window.jpg)
+
+* LastByteAcked：第一部分和第二部分的分界线LastByteSent：
+* 第二部分和第三部分的分界线LastByteAcked + AdvertisedWindow：
+* 第三部分和第四部分的分界线对于接收端来讲，它的缓存里记录的内容要简单一些。
+
+**接收端**
+
+![](pic/tcp-server-window.jpg)
+
+* MaxRcvBuffer：最大缓存的量；
+* LastByteRead 之后是已经接收了，但是还没被应用层读取的；
+* NextByteExpected 是第一部分和第二部分的分界线
+
+------
+
+**丢包问题**
+
+比如说 8/9 号包已接收，6、7 号包未接收。这时候就会触发自适应重传算法  
