@@ -1,5 +1,5 @@
-### kafka
+# kafka
 
-![](pic/kafka.png)
+![kafka全景图](pic/kafka.png)
 
-![](pic/kafka-broker.png)
+![topic-par](pic/kafka-broker.png)
